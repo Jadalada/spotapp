@@ -1,6 +1,0 @@
-client_id=31c6ef8e47f84ed08cdf06d80bc11f8e
-client_secret=821bf1cf91194c6b8bc6c920e58cf964
-device_name=Jad’s MacBook Pro
-redirect_uri=https://localhost:8888/callback/
-username=Jjthecatman
-scope=user-read-private user-read-playback-state user-modify-playback-state
