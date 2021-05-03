@@ -254,7 +254,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
 class SWorker(QThread):
     update = pyqtSignal(str)
 
-    def __init__(self, func, timerest, pare nt=None):
+    def __init__(self, func, timerest, parent=None):
         super().__init__(parent)  # need to call super() or app breaks idk
         self.func = func
         self.timerest = timerest
