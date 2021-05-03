@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import Qt
 from spotfuncs import *
 import time
 
@@ -47,10 +48,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.duration_slider.setOrientation(QtCore.Qt.Horizontal)
         self.duration_slider.setObjectName("duration_slider")
 
-        self.albumart = QtWidgets.QLabel(self.centralwidget)
-        self.albumart.setGeometry(QtCore.QRect(0, 0, 700, 700))
-        self.albumart.setText("")
-        self.albumart.setObjectName("albumart")
         self.artistname = QtWidgets.QLabel(self.centralwidget)
         self.artistname.setGeometry(QtCore.QRect(150, 341, 400, 25))
         font = QtGui.QFont()
@@ -81,15 +78,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.songname.setScaledContents(False)
         self.songname.setAlignment(QtCore.Qt.AlignCenter)
         self.songname.setObjectName("songname")
-        self.albumart.raise_()
-        self.duration_label.raise_()
-        self.duration_slider.raise_()
-        self.artistname.raise_()
-        self.songname.raise_()
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         # BACK BUTTON
         self.b_back = QtWidgets.QPushButton(self.centralwidget)
@@ -168,9 +156,15 @@ class Ui_MainWindow(QtWidgets.QWidget):
 
         # ALBUM ART
         self.albumart = QtWidgets.QLabel(self.centralwidget)
-        self.albumart.setGeometry(QtCore.QRect(0, 0, 700, 700))
+        self.albumart.setGeometry(QtCore.QRect(50, 50, 600, 600))
         self.albumart.setText("")
         self.albumart.setObjectName("albumart")
+
+        # BLUR EFFECT
+        self.blur = QtWidgets.QGraphicsBlurEffect()
+        self.blur.setBlurRadius(5)
+        self.albumart.setGraphicsEffect(self.blur)
+
         self.albumart.raise_()
         self.duration_label.raise_()
         self.duration_slider.raise_()
@@ -181,6 +175,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_repeat.raise_()
         self.artistname.raise_()
         self.songname.raise_()
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -226,7 +221,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.songname.setText(f"<html><head/><body><p><span style=\" color:white;\">{val}</span></p></body></html>")
 
     def update_an(self, val):
-        self.artistname.setText(f"<span style=color:#151515;>{val}</span>")
+        self.artistname.setText(f"<span style=color:#FBFCF8;>{val}</span>")
 
     def update_dur(self, val):
         self.duration_label.setText(f"<span style=color:white;>{val}</span>")
@@ -240,7 +235,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         try:
             image.loadFromData(val)
             pix = QtGui.QPixmap(image)
-            pix = pix.scaled(700, 700)
             self.albumart.setPixmap(pix)
         except TypeError:
             self.albumart.setPixmap(QtGui.QPixmap('assets/unknown.png'))
@@ -260,7 +254,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
 class SWorker(QThread):
     update = pyqtSignal(str)
 
-    def __init__(self, func, timerest, parent=None):
+    def __init__(self, func, timerest, pare nt=None):
         super().__init__(parent)  # need to call super() or app breaks idk
         self.func = func
         self.timerest = timerest

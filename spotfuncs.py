@@ -71,7 +71,7 @@ def get_artists():
                 x = sname.index('feat. ')
                 if sname[x + 6:len(sname) - 1] not in names:
                     names.append(sname[x + 6:len(sname) - 1])
-            return names
+            return ", ".join(names) if type(names) == list else names
         except:
             return ""
 
