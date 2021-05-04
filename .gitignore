@@ -2,5 +2,8 @@
 __pycache__
 .idea
 .DS_Store
+
 old-version/.cache-Jjthecatman
 old-version/assets/reqs.txt
+reworked-version/assets/reqs.txt
+reworked-version/.cache-Jjthecatman
