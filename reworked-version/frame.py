@@ -11,8 +11,14 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.uic import *
-from spotfuncs import *
 import time
+
+
+try:
+    from spotfuncs import *
+except OSError:
+    print("Error connecting to Spotify API")
+
 
 MAIN_UI, _ = loadUiType('assets/mainframe.ui')
 
@@ -266,8 +272,3 @@ class SWorker(QThread):
             n = str(self.func())
             self.update.emit(n)
             time.sleep(self.time_rest)  # TIME SLEEP SET TO 0.9 INSTEAD OF 1 CAUSE APP BREAKS IF I DONT
-
-
-# WORKER CLASS FOR MOUSE
-class MWorker(QThread):
-    update = pyqtSignal()

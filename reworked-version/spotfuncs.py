@@ -1,12 +1,8 @@
-import pandas as pd
-from spotipy.oauth2 import SpotifyOAuth
-import spotipy as sp
-import pandas as pd
-from datetime import timedelta
-from pprint import pprint
 import urllib.request
-import requests
-import PIL.Image
+from datetime import timedelta
+import pandas as pd
+import spotipy as sp
+from spotipy.oauth2 import SpotifyOAuth
 
 setup = pd.read_csv("assets/reqs.txt", sep="=", index_col=0, squeeze=True, header=None)
 client_id = setup['client_id']
