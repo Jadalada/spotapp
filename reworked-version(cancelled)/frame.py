@@ -11,14 +11,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.uic import *
+import subprocess
 import time
-
 
 try:
     from spotfuncs import *
 except OSError:
     print("Error connecting to Spotify API")
-
 
 MAIN_UI, _ = loadUiType('assets/mainframe.ui')
 
@@ -28,7 +27,7 @@ class Ui_MainWindow(QMainWindow, MAIN_UI):
         super(Ui_MainWindow, self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
-
+        self.songname.setText("Joe")
         """
         self.usize = QtCore.QSize(90, 90)
         self.osize = QtCore.QSize(35, 35)

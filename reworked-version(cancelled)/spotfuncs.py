@@ -1,8 +1,8 @@
-import urllib.request
-from datetime import timedelta
-import pandas as pd
-import spotipy as sp
 from spotipy.oauth2 import SpotifyOAuth
+from datetime import timedelta
+import urllib.request as ur
+import spotipy as sp
+import pandas as pd
 
 setup = pd.read_csv("assets/reqs.txt", sep="=", index_col=0, squeeze=True, header=None)
 client_id = setup['client_id']
@@ -24,14 +24,23 @@ def authenticate_app():
     return spotify
 
 
+# Code to check for app running taken from Hugo on Stackoverflow
+# https://stackoverflow.com/users/724176/hugo
+def check_spotify():
+    return int(subprocess.check_output(["osascript",
+                                        "-e", "tell application \"System Events\"",
+                                        "-e", "count (every process whose name is \"Spotify""\")",
+                                        "-e", "end tell"]).strip()) > 0
+
+
 def get_device_id(spot):
     devices = spot.devices()
-    deviceID = None
+    device_id = None
     for d in devices['devices']:
         d['name'] = d['name'].replace('’', '\'')
         if d['name'] == device_name:
-            deviceID = d['id']
-            return deviceID
+            device_id = d['id']
+            return device_id
 
 
 spotify = authenticate_app()
@@ -103,7 +112,7 @@ def get_duration():
 def get_album_img():
     try:
         url = spotify.current_playback()['item']['album']['images'][0]['url']
-        a = urllib.request.urlopen(url).read()
+        a = ur.urlopen(url).read()
         return a
     except TypeError:
         return None
