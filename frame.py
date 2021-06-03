@@ -9,15 +9,46 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread, pyqtSignal
-from spotfuncs import *
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
 import time
+import sys
+
+try:
+    from spotfuncs import *
+except Exception:
+    print("Unable to connect to the internet.")
+
+
+# IMAGE VARIABLES
+# MISC
+UNKWN = 'assets/unknown.jpg'
+
+# 0 - DARK
+D_BTN_BACK = 'assets/0/back.png'
+D_BTN_PLAY = 'assets/0/play.png'
+D_BTN_PAUSE = 'assets/0/pause.png'
+D_BTN_FORWARD = 'assets/0/forward.png'
+D_BTN_REPEAT = 'assets/0/repeat.png'
+D_BTN_SHUFFLE = 'assets/0/shuffle.png'
+D_BTN_MIN = 'assets/0/min.png'
+D_BTN_MAX = 'assets/0/max.png'
+
+# 1 - DARK
+L_BTN_BACK = 'assets/1/back.png'
+L_BTN_PLAY = 'assets/1/play.png'
+L_BTN_PAUSE = 'assets/1/pause.png'
+L_BTN_FORWARD = 'assets/1/forward.png'
+L_BTN_REPEAT = 'assets/1/repeat.png'
+L_BTN_SHUFFLE = 'assets/1/shuffle.png'
+L_BTN_MIN = 'assets/1/min.png'
+L_BTN_MAX = 'assets/1/max.png'
 
 
 class Ui_MainWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(Ui_MainWindow, self).__init__(parent)
         self.setMouseTracking(True)
+        self.set_rest()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -89,7 +120,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_back.setDefault(False)
         self.b_back.setFlat(True)
         self.b_back.setObjectName("b_back")
-        self.b_back.setIcon(QtGui.QIcon('assets/back.png'))
         self.b_back.setIconSize(self.osize)
         self.b_back.setStyleSheet("background-color:rgba(0,0,0,0) ")
 
@@ -104,7 +134,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_playpause.setDefault(False)
         self.b_playpause.setFlat(True)
         self.b_playpause.setObjectName("b_playpause")
-        self.b_playpause.setIcon(QtGui.QIcon('assets/play.png'))
         self.b_playpause.setIconSize(self.usize)
         self.b_playpause.setStyleSheet("background-color:rgba(0,0,0,0) ")
 
@@ -119,7 +148,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_forward.setDefault(False)
         self.b_forward.setFlat(True)
         self.b_forward.setObjectName("b_forward")
-        self.b_forward.setIcon(QtGui.QIcon('assets/forward.png'))
         self.b_forward.setIconSize(self.osize)
         self.b_forward.setStyleSheet("background-color:rgba(0,0,0,0) ")
 
@@ -134,7 +162,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_shuffle.setDefault(False)
         self.b_shuffle.setFlat(True)
         self.b_shuffle.setObjectName("b_shuffle")
-        self.b_shuffle.setIcon(QtGui.QIcon('assets/shuffle.png'))
         self.b_shuffle.setIconSize(self.osize)
         self.b_shuffle.setStyleSheet("background-color:rgba(0,0,0,0) ")
 
@@ -149,9 +176,14 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_repeat.setDefault(False)
         self.b_repeat.setFlat(True)
         self.b_repeat.setObjectName("b_repeat")
-        self.b_repeat.setIcon(QtGui.QIcon('assets/repeat.png'))
         self.b_repeat.setIconSize(self.osize)
         self.b_repeat.setStyleSheet("background-color:rgba(0,0,0,0) ")
+
+        self.b_min = QtWidgets.QPushButton(self.centralwidget)
+        self.b_min.setGeometry(QtCore.QRect(650, 50, 50, 50))
+        i = QtGui.QIcon(D_BTN_MIN)
+
+        self.b_min.setIcon(i)
 
         # ALBUM ART
         self.albumart = QtWidgets.QLabel(self.centralwidget)
@@ -183,7 +215,8 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        # DEFINE FUNCTIONS
+    def set_rest(self):
+        # ASSIGN FUNCTION to VARIABLES
         sn = get_song_name
         an = get_artists
         dur = get_duration
@@ -207,14 +240,16 @@ class Ui_MainWindow(QtWidgets.QWidget):
         # DURATION THREAD
         self.workerdurs = SWorker(durs, 0.5)
         self.workerdurs.start()
-        self.workerdurs.update.connect(self.update_durs)
+        self.workerdurs.update.connect(self.update_dur_slider)
 
         # ALBUM ART THREAD
-        self.workeraa = SWorker(get_album_img, 2)
+        self.workeraa = SWorker(get_album_img, 1)
         self.workeraa.start()
         self.workeraa.update.connect(self.update_img)
 
-        # UPDATE FUNCTIONS FOR CONNECTING SLOTS-SIGNALS
+    # UPDATE FUNCTIONS FOR CONNECTING SLOTS-SIGNALS
+    def get_color_level(self, val):
+        pass
 
     def update_sn(self, val):
         self.songname.setText(f"<html><head/><body><p><span style=\" color:white;\">{val}</span></p></body></html>")
@@ -225,46 +260,51 @@ class Ui_MainWindow(QtWidgets.QWidget):
     def update_dur(self, val):
         self.duration_label.setText(f"<span style=color:white;>{val}</span>")
 
-    def update_durs(self, val):
+    def update_dur_slider(self, val):
         self.duration_slider.setValue(int(val))
 
-    def update_img(self, val):
+    def update_img(self):
         val = get_album_img()
+        color_level = check_levels(val)
+        state = check_state()
+
+        def set_ui_color(cl=color_level):
+            if cl == 0:
+                self.b_back.setPix(QtGui.QPixmap(D_BTN_BACK))
+                self.b_forward.setPix(QtGui.QPixmap(D_BTN_FORWARD))
+                self.b_play.setPix(QtGui.QPixmap(D_BTN_FORWARD))
+                self.b_pause.setPix(QtGui.QPixmap(D_BTN_FORWARD))
+                self.b_repeat.setPix(QtGui.QPixmap(D_BTN_REPEAT))
+                self.b_shuffle.setPix(QtGui.QPixmap(D_BTN_SHUFFLE))
+            elif cl == 1:
+                pass
+
         image = QtGui.QImage()
         try:
             image.loadFromData(val)
             pix = QtGui.QPixmap(image)
+            pix.scaled(600, 600, Qt.KeepAspectRatio)
             self.albumart.setPixmap(pix)
         except TypeError:
-            self.albumart.setPixmap(QtGui.QPixmap('assets/unknown.png'))
+            self.albumart.setPixmap(QtGui.QPixmap('assets/unknown.jpg'))
 
-    # this un-needingly resets ui elements but app breaks if i delete
+    #  ??
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.duration_label.setText(_translate("MainWindow", "0:00"))
-
-    def enterEvent(self, event):
-        print("Mouse")
-        return QtWidgets.enterEvent(self, event)
 
 
 # WORKER CLASS FOR CREATING QThread(s) TO UPDATE GUI
 class SWorker(QThread):
     update = pyqtSignal(str)
 
-    def __init__(self, func, timerest, parent=None):
-        super().__init__(parent)  # need to call super() or app breaks idk
+    def __init__(self, func, time_rest, parent=None):
+        super().__init__(parent)
         self.func = func
-        self.timerest = timerest
+        self.time_rest = time_rest
 
     def run(self):
         while True:
             n = str(self.func())
             self.update.emit(n)
-            time.sleep(self.timerest)  # TIME SLEEP SET TO 0.9 INSTEAD OF 1 CAUSE APP BREAKS IF I DONT
-
-
-# WORKER CLASS FOR MOUSE
-class MWorker(QThread):
-    update = pyqtSignal()
+            time.sleep(self.time_rest)  # TIME SLEEP SET TO 0.9 INSTEAD OF 1 CAUSE APP BREAKS IF I DONT

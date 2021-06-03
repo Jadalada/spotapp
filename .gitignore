@@ -3,7 +3,7 @@ __pycache__
 .idea
 .DS_Store
 
-old-version/.cache-Jjthecatman
-old-version/assets/reqs.txt
-reworked-version(cancelled)/assets/reqs.txt
-reworked-version(cancelled)/.cache-Jjthecatman
+.cache-Jjthecatman
+assets/reqs.txt
+_reworked-version(cancelled)/assets/reqs.txt
+_reworked-version(cancelled)/.cache-Jjthecatman

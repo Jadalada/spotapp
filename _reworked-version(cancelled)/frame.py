@@ -217,7 +217,7 @@ class Ui_MainWindow(QMainWindow, MAIN_UI):
         self.workerdurs.update.connect(self.update_durs)
 
         # ALBUM ART THREAD
-        self.workeraa = SWorker(get_album_img, 2)
+        self.workeraa = SWorker(get_album_img, 0)
         self.workeraa.start()
         self.workeraa.update.connect(self.update_img)
 

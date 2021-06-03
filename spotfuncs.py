@@ -1,12 +1,14 @@
-import pandas as pd
 from spotipy.oauth2 import SpotifyOAuth
-import spotipy as sp
-import pandas as pd
 from datetime import timedelta
 from pprint import pprint
+
+import spotipy as sp
+import pandas as pd
+import numpy as np
+
 import urllib.request
-import requests
-import PIL.Image
+import subprocess
+import imageio
 
 setup = pd.read_csv("assets/reqs.txt", sep="=", index_col=0, squeeze=True, header=None)
 client_id = setup['client_id']
@@ -26,6 +28,15 @@ def authenticate_app():
         username=username)
     spotify = sp.Spotify(auth_manager=auth_manager)
     return spotify
+
+
+# Code to check for app running taken from Hugo on Stackoverflow
+# https://stackoverflow.com/users/724176/hugo
+def check_spotify():
+    return int(subprocess.check_output(["osascript",
+                                        "-e", "tell application \"System Events\"",
+                                        "-e", "count (every process whose name is \"Spotify""\")",
+                                        "-e", "end tell"]).strip()) > 0
 
 
 def get_device_id(spot):
@@ -50,10 +61,6 @@ def get_song_name():
     return a
 
 
-def get_album_name():
-    return spotify.current_playback()['item']['album']['name']
-
-
 def get_artists():
     sname = get_song_name()
     if sname == "No Song Playing!":
@@ -72,7 +79,7 @@ def get_artists():
                 if sname[x + 6:len(sname) - 1] not in names:
                     names.append(sname[x + 6:len(sname) - 1])
             return ", ".join(names) if type(names) == list else names
-        except:
+        except Exception:
             return ""
 
 
@@ -92,7 +99,7 @@ def get_progress_percent():
         p = spotify.current_playback()['progress_ms']
         d = spotify.current_playback()['item']['duration_ms']
         return round(p / d * 100).__floor__()
-    except:
+    except Exception:
         return 0
 
 
@@ -109,14 +116,31 @@ def get_album_img():
         url = spotify.current_playback()['item']['album']['images'][0]['url']
         a = urllib.request.urlopen(url).read()
         return a
+    except Exception:
+        return None
+
+
+def check_levels(img):
+    try:
+        f = imageio.imread(img, as_gray=True)
+        is_light = np.mean(f) > 127
+        return 1 if is_light else 0
+    except OSError:
+        return -1
+
+
+def check_state():
+    try:
+        return spotify.current_playback()['is_playing']
     except TypeError:
-        return None
-    except IndexError:
-        return None
+        return -1
 
 
 def skip():
-    spotify.next_track()
+    try:
+        spotify.next_track()
+    except Exception:
+        pass
 
 
 def back():
