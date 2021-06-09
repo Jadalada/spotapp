@@ -5,4 +5,8 @@ __pycache__
 
 .cache-Jjthecatman
 assets/reqs.txt
+<<<<<<< HEAD
 /_reworked-version(cancelled)
+=======
+_reworked-version(cancelled)
+>>>>>>> 02af5befa88e9b85f7fed242afaa0f9c0099401f
