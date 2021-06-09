@@ -17,7 +17,7 @@ try:
     from spotfuncs import *
 except Exception:
     print("Unable to connect to the internet.")
-
+    sys.exit()
 
 # IMAGE VARIABLES
 # MISC
@@ -43,6 +43,9 @@ L_BTN_SHUFFLE = 'assets/1/shuffle.png'
 L_BTN_MIN = 'assets/1/min.png'
 L_BTN_MAX = 'assets/1/max.png'
 
+SN = None
+m_STATE = True
+
 
 class Ui_MainWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -54,19 +57,19 @@ class Ui_MainWindow(QtWidgets.QWidget):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
         self.usize = QtCore.QSize(90, 90)
-        self.osize = QtCore.QSize(35, 35)
+        self.osize = QtCore.QSize(55, 55)
         MainWindow.resize(700, 700)
         MainWindow.setStyleSheet("background-color: rgb(30, 30, 30);")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
         self.duration_label = QtWidgets.QLabel(self.centralwidget)
-        self.duration_label.setGeometry(QtCore.QRect(75, 515, 60, 16))
+        self.duration_label.setGeometry(QtCore.QRect(75, 515, 45, 16))
         font = QtGui.QFont()
         font.setFamily("Avenir")
         font.setPointSize(14)
         self.duration_label.setFont(font)
-        self.duration_label.setStyleSheet("color:rgb(255, 255, 255); background-color:rgba(0,0,0,0) ")
+        self.duration_label.setStyleSheet("color:rgb(255, 255, 255); background-color:rgba(108,108,108,75) ")
         self.duration_label.setObjectName("duration_label")
         self.duration_slider = QtWidgets.QSlider(self.centralwidget)
         self.duration_slider.setGeometry(QtCore.QRect(75, 490, 550, 25))
@@ -86,7 +89,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.artistname.setFont(font)
         self.artistname.setMouseTracking(True)
         self.artistname.setAccessibleDescription("")
-        self.artistname.setStyleSheet("background-color:rgba(108,108,108,50) ")
+        self.artistname.setStyleSheet("background-color:rgba(108,108,108,75) ")
         self.artistname.setText(
             "<html><head/><body><p><span style=\" color:#6c6c6c;\">artist_name_placeholder</span></p></body></html>")
         self.artistname.setScaledContents(False)
@@ -102,9 +105,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.songname.setFont(font)
         self.songname.setMouseTracking(True)
         self.songname.setAccessibleDescription("")
-        self.songname.setStyleSheet("background-color:rgba(108,108,108,50) ")
-        self.songname.setText(
-            "<html><head/><body><p><span style=\" color:#ffffff;\">song_name_placeholder</span></p></body></html>")
+        self.songname.setStyleSheet("background-color:rgba(108,108,108,75) ")
         self.songname.setScaledContents(False)
         self.songname.setAlignment(QtCore.Qt.AlignCenter)
         self.songname.setObjectName("songname")
@@ -136,6 +137,23 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_playpause.setObjectName("b_playpause")
         self.b_playpause.setIconSize(self.usize)
         self.b_playpause.setStyleSheet("background-color:rgba(0,0,0,0) ")
+
+        # Min Max
+        self.b_minmax = QtWidgets.QPushButton(self.centralwidget)
+        self.b_minmax.setGeometry(QtCore.QRect(600, 0, 100, 100))
+        self.b_minmax.setAcceptDrops(False)
+        self.b_minmax.setAccessibleDescription("")
+        self.b_minmax.setAutoFillBackground(False)
+        self.b_minmax.setText("")
+        self.b_minmax.setCheckable(False)
+        self.b_minmax.setDefault(False)
+        self.b_minmax.setFlat(True)
+        self.b_minmax.setObjectName("b_playpause")
+        self.b_minmax.setIconSize(self.usize)
+        self.b_minmax.setStyleSheet("background-color:rgba(0,0,0,0) ")
+
+        self.b_minmax.setIcon(QtGui.QIcon(L_BTN_MAX))
+
 
         # SEEK BUTTON
         self.b_forward = QtWidgets.QPushButton(self.centralwidget)
@@ -181,9 +199,8 @@ class Ui_MainWindow(QtWidgets.QWidget):
 
         self.b_min = QtWidgets.QPushButton(self.centralwidget)
         self.b_min.setGeometry(QtCore.QRect(650, 50, 50, 50))
-        i = QtGui.QIcon(D_BTN_MIN)
-
-        self.b_min.setIcon(i)
+        self.b_min.setIconSize(QtCore.QSize(50, 50))
+        self.b_min.setStyleSheet("background-color:rgba(0,0,0,0) ")
 
         # ALBUM ART
         self.albumart = QtWidgets.QLabel(self.centralwidget)
@@ -193,6 +210,8 @@ class Ui_MainWindow(QtWidgets.QWidget):
 
         # BLUR EFFECT
         self.blur = QtWidgets.QGraphicsBlurEffect()
+        self.dim = QtWidgets.QGraphicsOpacityEffect()
+        self.dim.setOpacity(0.1)
         self.blur.setBlurRadius(5)
         self.albumart.setGraphicsEffect(self.blur)
 
@@ -206,6 +225,18 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.b_repeat.raise_()
         self.artistname.raise_()
         self.songname.raise_()
+        self.b_minmax.raise_()
+
+        self.b_back.setIcon(QtGui.QIcon(L_BTN_BACK))
+        self.b_forward.setIcon(QtGui.QIcon(L_BTN_FORWARD))
+        self.b_repeat.setIcon(QtGui.QIcon(L_BTN_REPEAT))
+        self.b_shuffle.setIcon(QtGui.QIcon(L_BTN_SHUFFLE))
+
+        self.b_minmax.clicked.connect(self.update_minmax)
+        self.b_back.clicked.connect(back)
+        self.b_forward.clicked.connect(skip)
+        self.b_shuffle.clicked.connect(shuffle)
+        self.b_playpause.clicked.connect(self.play_pause)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -222,6 +253,11 @@ class Ui_MainWindow(QtWidgets.QWidget):
         dur = get_duration
         durs = get_progress_percent
 
+        # ALBUM ART THREAD
+        self.workeraa = SWorker(get_album_img, 1)
+        self.workeraa.start()
+        self.workeraa.update.connect(self.update_img)
+
         # SONG NAME THREAD
         self.workersn = SWorker(sn, 1)
         self.workersn.start()
@@ -233,72 +269,97 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.workeran.update.connect(self.update_an)
 
         # DURATION THREAD
-        self.workerdur = SWorker(dur, 0.5)
+        self.workerdur = SWorker(dur, 1)
         self.workerdur.start()
         self.workerdur.update.connect(self.update_dur)
 
         # DURATION THREAD
-        self.workerdurs = SWorker(durs, 0.5)
+        self.workerdurs = SWorker(durs, 1)
         self.workerdurs.start()
         self.workerdurs.update.connect(self.update_dur_slider)
 
-        # ALBUM ART THREAD
-        self.workeraa = SWorker(get_album_img, 1)
-        self.workeraa.start()
-        self.workeraa.update.connect(self.update_img)
-
     # UPDATE FUNCTIONS FOR CONNECTING SLOTS-SIGNALS
-    def get_color_level(self, val):
-        pass
-
     def update_sn(self, val):
-        self.songname.setText(f"<html><head/><body><p><span style=\" color:white;\">{val}</span></p></body></html>")
+        self.songname.setText(f"<span style=color:#ffffff;>{val}</span>")
 
     def update_an(self, val):
-        self.artistname.setText(f"<span style=color:#FBFCF8;>{val}</span>")
+        self.artistname.setText(f"<span style=color:#ffffff;>{val}</span>")
 
     def update_dur(self, val):
-        self.duration_label.setText(f"<span style=color:white;>{val}</span>")
+        self.duration_label.setText(f" {val}")
 
     def update_dur_slider(self, val):
         self.duration_slider.setValue(int(val))
 
     def update_img(self):
-        val = get_album_img()
-        color_level = check_levels(val)
         state = check_state()
 
-        def set_ui_color(cl=color_level):
-            if cl == 0:
-                self.b_back.setPix(QtGui.QPixmap(D_BTN_BACK))
-                self.b_forward.setPix(QtGui.QPixmap(D_BTN_FORWARD))
-                self.b_play.setPix(QtGui.QPixmap(D_BTN_FORWARD))
-                self.b_pause.setPix(QtGui.QPixmap(D_BTN_FORWARD))
-                self.b_repeat.setPix(QtGui.QPixmap(D_BTN_REPEAT))
-                self.b_shuffle.setPix(QtGui.QPixmap(D_BTN_SHUFFLE))
-            elif cl == 1:
-                pass
+        if state:
+            self.b_playpause.setIcon(QtGui.QIcon(L_BTN_PAUSE))
+        else:
+            self.b_playpause.setIcon(QtGui.QIcon(L_BTN_PLAY))
 
-        image = QtGui.QImage()
-        try:
-            image.loadFromData(val)
-            pix = QtGui.QPixmap(image)
-            pix.scaled(600, 600, Qt.KeepAspectRatio)
-            self.albumart.setPixmap(pix)
-        except TypeError:
-            self.albumart.setPixmap(QtGui.QPixmap('assets/unknown.jpg'))
+        global SN
 
-    #  ??
+        if SN != get_song_name():
+            image = QtGui.QImage()
+            try:
+                val = get_album_img()
+                image.loadFromData(val)
+                pix = QtGui.QPixmap(image)
+                s_pix = pix.scaled(self.albumart.size(), Qt.KeepAspectRatio)
+                self.albumart.setPixmap(s_pix)
+            except TypeError:
+                self.albumart.setPixmap(QtGui.QPixmap('assets/unknown.jpg'))
+            SN = get_song_name()
+
+    def update_minmax(self):
+        global m_STATE
+        if m_STATE:
+            self.b_minmax.setIcon(QtGui.QIcon(L_BTN_MIN))
+            self.songname.setVisible(False)
+            self.artistname.setVisible(False)
+            self.b_back.setVisible(False)
+            self.duration_slider.setVisible(False)
+            self.duration_label.setVisible(False)
+            self.b_repeat.setVisible(False)
+            self.b_forward.setVisible(False)
+            self.b_shuffle.setVisible(False)
+            self.b_playpause.setVisible(False)
+            self.blur.setBlurRadius(0)
+            m_STATE = False
+
+        elif not m_STATE:
+            self.b_minmax.setIcon(QtGui.QIcon(L_BTN_MAX))
+            self.songname.setVisible(True)
+            self.artistname.setVisible(True)
+            self.b_back.setVisible(True)
+            self.duration_slider.setVisible(True)
+            self.duration_label.setVisible(True)
+            self.b_repeat.setVisible(True)
+            self.b_forward.setVisible(True)
+            self.b_shuffle.setVisible(True)
+            self.b_playpause.setVisible(True)
+            self.blur.setBlurRadius(5)
+            m_STATE = True
+
+    def play_pause(self):
+        if check_state():
+            pause()
+        else:
+            resume()
+
+    #  ?
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("Spotipy Mini Player", "Spotipy Mini Player"))
 
 
 # WORKER CLASS FOR CREATING QThread(s) TO UPDATE GUI
 class SWorker(QThread):
     update = pyqtSignal(str)
 
-    def __init__(self, func, time_rest, parent=None):
+    def __init__(self, func, time_rest=0, parent=None):
         super().__init__(parent)
         self.func = func
         self.time_rest = time_rest
@@ -307,4 +368,4 @@ class SWorker(QThread):
         while True:
             n = str(self.func())
             self.update.emit(n)
-            time.sleep(self.time_rest)  # TIME SLEEP SET TO 0.9 INSTEAD OF 1 CAUSE APP BREAKS IF I DONT
+            time.sleep(self.time_rest)

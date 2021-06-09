@@ -308,6 +308,19 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QSlider" name="volume_slider">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>510</y>
+      <width>160</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
    <zorder>albumart</zorder>
    <zorder>duration_label</zorder>
    <zorder>duration_slider</zorder>
@@ -318,6 +331,7 @@
    <zorder>b_repeat</zorder>
    <zorder>artistname</zorder>
    <zorder>songname</zorder>
+   <zorder>volume_slider</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>

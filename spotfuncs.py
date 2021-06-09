@@ -10,6 +10,8 @@ import urllib.request
 import subprocess
 import imageio
 
+import requests.exceptions
+
 setup = pd.read_csv("assets/reqs.txt", sep="=", index_col=0, squeeze=True, header=None)
 client_id = setup['client_id']
 client_secret = setup['client_secret']
@@ -17,6 +19,9 @@ device_name = setup['device_name']
 redirect_uri = setup['redirect_uri']
 scope = setup['scope']
 username = setup['username']
+
+s_STATE = None
+r_STATE = None
 
 
 def authenticate_app():
@@ -56,13 +61,26 @@ deviceID = get_device_id(spotify)
 def get_song_name():
     try:
         a = spotify.current_playback()['item']['name']
+        if len(a) > 27:
+            a = f"{a[:25]}..."
+        return a
     except TypeError:
-        a = "No Song Playing!"
-    return a
+        return "No Song Playing!"
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
+
+
+def get_song_name_raw():
+    try:
+        return spotify.current_playback()['item']['name']
+    except TypeError:
+        return "No Song Playing!"
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
 def get_artists():
-    sname = get_song_name()
+    sname = get_song_name_raw()
     if sname == "No Song Playing!":
         return ""
     else:
@@ -81,17 +99,12 @@ def get_artists():
             return ", ".join(names) if type(names) == list else names
         except Exception:
             return ""
+        except requests.exceptions.ReadTimeout:
+            print("Unable to connect to internet!")
 
 
 def get_volume():
     return spotify.current_playback()['device']['volume_percent']
-
-
-def get_all_info():
-    name = get_song_name()
-    artist = get_artists()
-    album = get_album_name()
-    print(f"Song:\t\t{name}\nArtist:\t\t{artist}\nAlbum:\t\t{album}")
 
 
 def get_progress_percent():
@@ -106,9 +119,11 @@ def get_progress_percent():
 def get_duration():
     try:
         t = str(timedelta(milliseconds=spotify.current_playback()['progress_ms']))
+        return t[2:7]
     except TypeError:
         return "0:00"
-    return t[2:7]
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
 def get_album_img():
@@ -116,8 +131,8 @@ def get_album_img():
         url = spotify.current_playback()['item']['album']['images'][0]['url']
         a = urllib.request.urlopen(url).read()
         return a
-    except Exception:
-        return None
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
 def check_levels(img):
@@ -134,22 +149,58 @@ def check_state():
         return spotify.current_playback()['is_playing']
     except TypeError:
         return -1
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
 def skip():
     try:
         spotify.next_track()
-    except Exception:
-        pass
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
 def back():
-    spotify.previous_track()
+    try:
+        spotify.previous_track()
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
-def shuffle(state):
-    spotify.shuffle(state)
+def shuffle():
+    try:
+        global s_STATE
+        s_STATE = True
+        if s_STATE:
+            spotify.shuffle(False)
+            s_STATE = False
+        elif not s_STATE:
+            spotify.shuffle(True)
+            s_STATE = True
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
 
 
-def repeat(state):
-    spotify.repeat(state)
+def repeat():
+    try:
+        global r_STATE
+        r_STATE = True
+        if r_STATE:
+            spotify.repeat(False)
+            r_STATE = False
+        elif not r_STATE:
+            spotify.repeat(True)
+            r_STATE = True
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
+
+
+def pause():
+    try:
+        spotify.pause_playback()
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
+
+
+def resume():
+    spotify.start_playback()
