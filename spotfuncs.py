@@ -203,4 +203,7 @@ def pause():
 
 
 def resume():
-    spotify.start_playback()
+    try:
+        spotify.start_playback()
+    except requests.exceptions.ReadTimeout:
+        print("Unable to connect to internet!")
